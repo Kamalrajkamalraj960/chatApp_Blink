@@ -59,18 +59,14 @@ export const loginUser = async (req, res) => {
     user.isOnline = true;
     await user.save();
 
-    // ✅ generate token ONCE
-    const token = generateToken(res, user._id);
+    // ✅ ONLY CALL ONCE
+    generateToken(res, user._id);
 
     const freshUser = await User.findById(user._id).select("-password");
 
-    res.status(200).json({
-      user: freshUser,
-      token, // ✅ now real token
-    });
+    res.status(200).json(freshUser);
 
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: error.message });
   }
 };
