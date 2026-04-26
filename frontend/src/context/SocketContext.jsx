@@ -26,7 +26,8 @@ export const SocketContextProvider = ({
     useState([]);
 
   useEffect(() => {
-    if (!userInfo?._id) {
+    if (!userInfo || !userInfo._id) return;
+    {
       if (socket) {
         socket.disconnect();
         setSocket(null);
@@ -34,9 +35,7 @@ export const SocketContextProvider = ({
       return;
     }
 
-    const API_URL =
-      import.meta.env.VITE_API_URL ||
-      "https://chatapp-blink.onrender.com";
+    const API_URL = "https://chatapp-blink.onrender.com";
 
     const newSocket = io(API_URL, {
       withCredentials: true,
