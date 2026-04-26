@@ -17,13 +17,15 @@ const Sidebar = ({ selectedUser, setSelectedUser }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  const API = "https://chatapp-blink.onrender.com";
+
   // 🔥 Avatar helper
   const getAvatarUrl = (avatar, refresh = false) => {
     if (!avatar) return "https://i.pravatar.cc/150";
 
     const url = avatar.startsWith("http")
       ? avatar
-      : `http://localhost:5000${avatar}`;
+      : `${API}${avatar}`;
 
     return refresh ? `${url}?t=${Date.now()}` : url;
   };
@@ -31,9 +33,12 @@ const Sidebar = ({ selectedUser, setSelectedUser }) => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/users?search=", {
-          credentials: "include"
-        })
+        const res = await fetch(
+          `${API}/api/users?search=${search}`,
+          {
+            credentials: "include"
+          }
+        );
 
         const data = await res.json();
 
@@ -56,7 +61,7 @@ const Sidebar = ({ selectedUser, setSelectedUser }) => {
 
   const handleLogout = async () => {
     try {
-      await fetch("http://localhost:5000/api/auth/logout", {
+      await fetch(`${API}/api/auth/logout`, {
         method: "POST",
         credentials: "include",
       });

@@ -7,6 +7,8 @@ const Settings = ({ setOpenSettings }) => {
     const { userInfo } = useSelector((state) => state.auth);
     const dispatch = useDispatch();
 
+    const API = "https://chatapp-blink.onrender.com";
+
     const [username, setUsername] = useState(
         userInfo?.username || ""
     );
@@ -21,7 +23,7 @@ const Settings = ({ setOpenSettings }) => {
         userInfo?.avatar
             ? userInfo.avatar.startsWith("http")
                 ? userInfo.avatar
-                : `http://localhost:5000${userInfo.avatar}`
+                : `${API}${userInfo.avatar}`
             : ""
     );
 
@@ -50,22 +52,21 @@ const Settings = ({ setOpenSettings }) => {
                 formData.append("avatar", avatar);
             }
 
-            const res = await fetch("http://localhost:5000/api/users/profile", {
+            const res = await fetch(`${API}/api/users/profile`, {
                 method: "PUT",
                 body: formData,
                 credentials: "include"
-            })  
+            });
 
             const data = await res.json();
 
             if (res.ok) {
                 dispatch(setCredentials(data));
 
-                // 🔥 FIX: update preview immediately
                 const imageUrl = data.avatar
                     ? data.avatar.startsWith("http")
                         ? data.avatar
-                        : `http://localhost:5000${data.avatar}`
+                        : `${API}${data.avatar}`
                     : "";
 
                 setPreview(imageUrl);

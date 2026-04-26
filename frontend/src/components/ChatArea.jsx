@@ -39,7 +39,7 @@ const ChatArea = ({
 
   const isOnline = onlineUsers.includes(selectedUser?._id);
 
-  const API = "http://localhost:5000";
+  const API = "https://chatapp-blink.onrender.com";
 
   const getAvatarUrl = (avatar) => {
     if (!avatar) return "https://i.pravatar.cc/150";
@@ -406,14 +406,14 @@ const ChatArea = ({
             <div
               key={msg._id}
               className={`flex ${isMe
-                  ? "justify-end"
-                  : "justify-start"
+                ? "justify-end"
+                : "justify-start"
                 }`}
             >
               <div
                 className={`max-w-xs rounded-2xl px-4 py-2 relative ${isMe
-                    ? "bg-cyan-500 text-white"
-                    : "bg-white/10 text-white"
+                  ? "bg-cyan-500 text-white"
+                  : "bg-white/10 text-white"
                   }`}
               >
                 {/* Reply */}

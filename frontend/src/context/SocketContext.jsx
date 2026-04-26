@@ -36,7 +36,7 @@ export const SocketContextProvider = ({
 
     const API_URL =
       import.meta.env.VITE_API_URL ||
-      "http://localhost:5000";
+      "https://chatapp-blink.onrender.com";
 
     const newSocket = io(API_URL, {
       withCredentials: true,
