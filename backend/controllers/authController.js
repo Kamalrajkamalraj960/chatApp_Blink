@@ -61,9 +61,15 @@ export const loginUser = async (req, res) => {
 
     generateToken(res, user._id);
 
+    const token = generateToken(res, user._id);
+
     const freshUser = await User.findById(user._id).select("-password");
 
-    res.status(200).json(freshUser);
+    res.status(200).json({
+      user: freshUser,
+      token,   // ✅ ADD THIS
+    });
+    
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: error.message });

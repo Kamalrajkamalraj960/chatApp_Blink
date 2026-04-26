@@ -20,24 +20,34 @@ const LoginPage = () => {
     setLoading(true);
 
     try {
-      const res = await fetch('https://chatapp-blink.onrender.com/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ email, password }),
-      });
+      const res = await fetch(
+        'https://chatapp-blink.onrender.com/api/auth/login',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({ email, password }),
+        }
+      );
 
       const data = await res.json();
-
-      console.log(data);
 
       if (!res.ok) {
         throw new Error(data.message || 'Failed to login');
       }
 
-      dispatch(setCredentials(data));
+      // 💥 IMPORTANT FIX: store token manually
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+      }
+
+      // store user in redux + localStorage (safe for refresh)
+      dispatch(setCredentials(data.user));
+
+      localStorage.setItem('user', JSON.stringify(data.user));
+
       navigate('/chat');
 
     } catch (err) {
