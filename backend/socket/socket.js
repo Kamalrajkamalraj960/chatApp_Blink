@@ -20,29 +20,54 @@ export const initSocket = (server) => {
   io.on("connection", (socket) => {
     const userId = socket.handshake.query.userId;
 
-    if (userId) {
-      userSocketMap[userId] = socket.id;
+    // ❌ Reject invalid connections
+    if (!userId) {
+      console.log("❌ Socket rejected: no userId");
+      socket.disconnect();
+      return;
     }
 
+    console.log("🟢 User connected:", userId);
+
+    // 🔥 Store socket safely
+    userSocketMap[userId] = socket.id;
+
+    // 📡 Emit online users
     io.emit("getOnlineUsers", Object.keys(userSocketMap));
 
+    // ✍️ Typing event
     socket.on("typing", ({ receiverId, senderName }) => {
       const receiverSocketId = userSocketMap[receiverId];
+
       if (receiverSocketId) {
-        io.to(receiverSocketId).emit("showTyping", senderName);
+        io.to(receiverSocketId).emit("showTyping", {
+          senderName,
+          senderId: userId,
+        });
       }
     });
 
+    // ⌨️ Stop typing event
     socket.on("stopTyping", ({ receiverId }) => {
       const receiverSocketId = userSocketMap[receiverId];
+
       if (receiverSocketId) {
-        io.to(receiverSocketId).emit("hideTyping");
+        io.to(receiverSocketId).emit("hideTyping", {
+          senderId: userId,
+        });
       }
     });
 
-    socket.on("disconnect", () => {
-      delete userSocketMap[userId];
+    // 🔴 Cleanup on disconnect
+    socket.on("disconnect", (reason) => {
+      console.log("🔴 Disconnected:", userId, reason);
+
+      if (userSocketMap[userId]) {
+        delete userSocketMap[userId];
+      }
+
       io.emit("getOnlineUsers", Object.keys(userSocketMap));
     });
   });
+
 };
