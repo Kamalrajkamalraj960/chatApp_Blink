@@ -17,11 +17,11 @@ const app = express();
 const server = http.createServer(app);
 
 // ---------------- MIDDLEWARE ----------------
+
+// 🔥 FIXED CORS (ONLY CHANGE)
 app.use(
   cors({
-    origin:
-      process.env.FRONTEND_URL ||
-      "https://chat-app-blink.vercel.app",
+    origin: "https://chat-app-blink.vercel.app",
     credentials: true,
   })
 );
