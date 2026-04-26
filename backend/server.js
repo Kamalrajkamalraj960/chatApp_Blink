@@ -21,7 +21,7 @@ const server = http.createServer(app);
 // 🔥 FIXED CORS (ONLY CHANGE)
 app.use(
   cors({
-    origin: "https://chat-app-blink.vercel.app",
+    origin: process.env.FRONTEND_URL,
     credentials: true,
   })
 );
