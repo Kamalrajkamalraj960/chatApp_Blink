@@ -18,21 +18,10 @@ const server = http.createServer(app);
 
 // ---------------- MIDDLEWARE ----------------
 
-const allowedOrigins = [
-  "https://chat-app-blink.vercel.app",
-  "http://localhost:5173"
-];
-
-// 🔥 FIXED CORS (production-safe)
+// 🔥 FIXED CORS (ONLY CHANGE)
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
+    origin: "https://chat-app-blink.vercel.app",
     credentials: true,
   })
 );

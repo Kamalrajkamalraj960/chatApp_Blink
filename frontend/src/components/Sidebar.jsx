@@ -30,13 +30,24 @@ const Sidebar = ({ selectedUser, setSelectedUser }) => {
     return refresh ? `${url}?t=${Date.now()}` : url;
   };
 
+  // ✅ FIXED: attach token for production auth
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("token");
+
+    return {
+      Authorization: token ? `Bearer ${token}` : "",
+    };
+  };
+
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         const res = await fetch(
           `${API}/api/users?search=${search}`,
           {
-            credentials: "include"
+            headers: {
+              ...getAuthHeaders(),
+            },
           }
         );
 
@@ -63,7 +74,9 @@ const Sidebar = ({ selectedUser, setSelectedUser }) => {
     try {
       await fetch(`${API}/api/auth/logout`, {
         method: "POST",
-        credentials: "include",
+        headers: {
+          ...getAuthHeaders(),
+        },
       });
 
       dispatch(logout());
@@ -90,14 +103,11 @@ const Sidebar = ({ selectedUser, setSelectedUser }) => {
                 {userInfo?.username}
               </h2>
 
-              <p className="text-xs text-cyan-400">
-                Online
-              </p>
+              <p className="text-xs text-cyan-400">Online</p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            {/* SETTINGS */}
             <button
               onClick={() => setOpenSettings(true)}
               className="p-2 text-slate-400 hover:text-white transition rounded-full hover:bg-white/10"
@@ -105,7 +115,6 @@ const Sidebar = ({ selectedUser, setSelectedUser }) => {
               <Settings size={20} />
             </button>
 
-            {/* LOGOUT */}
             <button
               onClick={handleLogout}
               className="p-2 text-slate-400 hover:text-white transition rounded-full hover:bg-white/10"
@@ -170,9 +179,7 @@ const Sidebar = ({ selectedUser, setSelectedUser }) => {
               </div>
             );
           })}
-
         </div>
-
       </div>
 
       {/* SETTINGS POPUP */}

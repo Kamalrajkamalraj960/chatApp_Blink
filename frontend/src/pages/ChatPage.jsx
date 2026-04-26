@@ -1,13 +1,27 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import ChatArea from "../components/ChatArea";
 import { useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
+import api from "../axios";
 
 const ChatPage = () => {
   const { userInfo } = useSelector((state) => state.auth);
 
   const [selectedUser, setSelectedUser] = useState(null);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const res = await api.get("/api/users?search=");
+        console.log("Users:", res.data);
+      } catch (err) {
+        console.log("User fetch error:", err.message);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   if (!userInfo) {
     return <Navigate to="/login" replace />;
