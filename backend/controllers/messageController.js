@@ -139,31 +139,22 @@ export const deleteMessage = async (req, res) => {
 // CLEAR CHAT
 export const clearChat = async (req, res) => {
   try {
-    const myId = req.user._id;
-    const userId = req.params.id;
+    const userId = req.user._id;
+    const otherUserId = req.params.id;
 
     await Message.deleteMany({
       $or: [
-        {
-          senderId: myId,
-          receiverId: userId
-        },
-        {
-          senderId: userId,
-          receiverId: myId
-        }
+        { senderId: userId, receiverId: otherUserId },
+        { senderId: otherUserId, receiverId: userId }
       ]
     });
 
-    res.status(200).json({
-      message: "Chat cleared successfully"
-    });
+    res.json({ success: true, message: "Chat cleared" });
   } catch (error) {
-    res.status(500).json({
-      message: error.message
-    });
+    res.status(500).json({ message: error.message });
   }
 };
+
 
 // SEEN MESSAGE
 export const markMessagesSeen = async (
