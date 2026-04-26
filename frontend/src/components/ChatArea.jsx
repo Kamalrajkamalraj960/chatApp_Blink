@@ -223,6 +223,37 @@ const ChatArea = ({
         </button>
       </div>
 
+      {messages.map((msg) => {
+        const isMe =
+          String(msg.senderId) === String(userInfo._id);
+
+        return (
+          <div
+            key={msg._id}
+            className={`flex ${isMe ? "justify-end" : "justify-start"}`}
+          >
+            <div
+              className={`max-w-xs relative px-4 py-2 rounded-2xl ${isMe ? "bg-cyan-500 text-white" : "bg-white/10 text-white"
+                }`}
+            >
+              {/* DELETE BUTTON (RESTORED) */}
+              {isMe && (
+                <button
+                  onClick={() => handleDeleteMessage(msg._id)}
+                  className="absolute top-1 right-1 text-red-300 hover:text-red-500"
+                >
+                  <Trash2 size={14} />
+                </button>
+              )}
+
+              {/* TEXT */}
+              {msg.text && <p className="mt-2">{msg.text}</p>}
+            </div>
+          </div>
+        );
+      })}
+
+
       {/* MESSAGES */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((msg) => (
