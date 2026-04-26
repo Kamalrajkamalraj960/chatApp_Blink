@@ -9,8 +9,9 @@ const generateToken = (res, userId) => {
     httpOnly: true,
     secure: true,
     sameSite: "none",
-    path: "/",
+    path: "/"
   });
+
 
 };
 

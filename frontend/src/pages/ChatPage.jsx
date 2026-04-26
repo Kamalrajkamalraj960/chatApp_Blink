@@ -3,7 +3,7 @@ import Sidebar from "../components/Sidebar";
 import ChatArea from "../components/ChatArea";
 import { useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
-// import api from "../axios";
+import api from "../axios";
 
 const ChatPage = () => {
   const { userInfo } = useSelector((state) => state.auth);
