@@ -1,4 +1,3 @@
-// server.js
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
@@ -20,7 +19,9 @@ const server = http.createServer(app);
 // ---------------- MIDDLEWARE ----------------
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "https://chatapp-blink.onrender.com",
+    origin:
+      process.env.FRONTEND_URL ||
+      "https://chat-app-blink.vercel.app",
     credentials: true,
   })
 );
@@ -47,11 +48,9 @@ initSocket(server);
 
 // ---------------- DATABASE ----------------
 const PORT = process.env.PORT || 5000;
-const MONGO_URI =
-  process.env.MONGO_URI || "mongodb://127.0.0.1:27017/blink_dev";
 
 mongoose
-  .connect(MONGO_URI)
+  .connect(process.env.MONGO_URI)
   .then(() => {
     console.log("✅ MongoDB Connected");
 
