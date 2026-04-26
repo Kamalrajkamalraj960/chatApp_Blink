@@ -59,22 +59,22 @@ export const loginUser = async (req, res) => {
     user.isOnline = true;
     await user.save();
 
-    generateToken(res, user._id);
-
+    // ✅ generate token ONCE
     const token = generateToken(res, user._id);
 
     const freshUser = await User.findById(user._id).select("-password");
 
     res.status(200).json({
       user: freshUser,
-      token,   // ✅ ADD THIS
+      token, // ✅ now real token
     });
-    
+
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: error.message });
   }
 };
+
 
 // @desc    Logout user / clear cookie
 // @route   POST /api/auth/logout
