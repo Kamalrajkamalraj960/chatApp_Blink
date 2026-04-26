@@ -12,7 +12,7 @@ export const getIO = () => io;
 export const initSocket = (server) => {
   io = new Server(server, {
     cors: {
-      origin: process.env.FRONTEND_URL || "https://chat-app-blink.vercel.app/",
+      origin: process.env.FRONTEND_URL || "https://chat-app-blink.vercel.app",
       credentials: true,
     },
   });
@@ -20,7 +20,6 @@ export const initSocket = (server) => {
   io.on("connection", (socket) => {
     const userId = socket.handshake.query.userId;
 
-    // ❌ Reject invalid connections
     if (!userId) {
       console.log("❌ Socket rejected: no userId");
       socket.disconnect();
@@ -29,13 +28,20 @@ export const initSocket = (server) => {
 
     console.log("🟢 User connected:", userId);
 
-    // 🔥 Store socket safely
     userSocketMap[userId] = socket.id;
 
-    // 📡 Emit online users
     io.emit("getOnlineUsers", Object.keys(userSocketMap));
 
-    // ✍️ Typing event
+    // 💬 MESSAGE SENDING (THIS WAS MISSING)
+    socket.on("send_message", (messageData) => {
+      const receiverSocketId = userSocketMap[messageData.receiverId];
+
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit("receive_message", messageData);
+      }
+    });
+
+    // ✍️ Typing
     socket.on("typing", ({ receiverId, senderName }) => {
       const receiverSocketId = userSocketMap[receiverId];
 
@@ -47,7 +53,6 @@ export const initSocket = (server) => {
       }
     });
 
-    // ⌨️ Stop typing event
     socket.on("stopTyping", ({ receiverId }) => {
       const receiverSocketId = userSocketMap[receiverId];
 
@@ -58,16 +63,12 @@ export const initSocket = (server) => {
       }
     });
 
-    // 🔴 Cleanup on disconnect
     socket.on("disconnect", (reason) => {
       console.log("🔴 Disconnected:", userId, reason);
 
-      if (userSocketMap[userId]) {
-        delete userSocketMap[userId];
-      }
+      delete userSocketMap[userId];
 
       io.emit("getOnlineUsers", Object.keys(userSocketMap));
     });
   });
-
 };

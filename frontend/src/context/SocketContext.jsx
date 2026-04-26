@@ -1,5 +1,3 @@
-// SocketContext.jsx
-
 import {
   createContext,
   useState,
@@ -27,12 +25,10 @@ export const SocketContextProvider = ({
 
   useEffect(() => {
     if (!userInfo || !userInfo._id) return;
-    {
-      if (socket) {
-        socket.disconnect();
-        setSocket(null);
-      }
-      return;
+
+    if (socket) {
+      socket.disconnect();
+      setSocket(null);
     }
 
     const API_URL = "https://chatapp-blink.onrender.com";

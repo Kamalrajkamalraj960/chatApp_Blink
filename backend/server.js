@@ -16,15 +16,13 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-// ---------------- MIDDLEWARE ----------------
-
-// 🔥 FIXED CORS (ONLY CHANGE)
+// ---------------- CORS (FIXED) ----------------
 app.use(cors({
   origin: "https://chat-app-blink.vercel.app",
-  credentials: true
+  credentials: true,
 }));
 
-
+// ---------------- MIDDLEWARE ----------------
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -42,7 +40,7 @@ app.get("/", (req, res) => {
   res.send("Blink API is running...");
 });
 
-// ---------------- SOCKET ----------------
+// ---------------- SOCKET INIT ----------------
 initSocket(server);
 
 // ---------------- DATABASE ----------------
