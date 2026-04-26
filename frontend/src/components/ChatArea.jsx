@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import {
   Trash2,
   Send,
-  Image as ImageIcon,
   ArrowLeft
 } from "lucide-react";
 import { useSelector } from "react-redux";
@@ -22,7 +21,6 @@ const ChatArea = ({ selectedUser, setSelectedUser }) => {
   const { socket, onlineUsers } = useSocketContext();
 
   const isOnline = onlineUsers.includes(selectedUser?._id);
-
   const API = "https://chatapp-blink.onrender.com";
 
   /* FETCH MESSAGES */
@@ -30,35 +28,35 @@ const ChatArea = ({ selectedUser, setSelectedUser }) => {
     const fetchMessages = async () => {
       if (!selectedUser) return;
 
-      try {
-        const res = await fetch(
-          `${API}/api/messages/${selectedUser._id}`,
-          { credentials: "include" }
-        );
+      const res = await fetch(
+        `${API}/api/messages/${selectedUser._id}`,
+        { credentials: "include" }
+      );
 
-        const data = await res.json();
-
-        if (res.ok) setMessages(data);
-      } catch (error) {
-        console.error(error);
-      }
+      const data = await res.json();
+      if (res.ok) setMessages(data);
     };
 
     fetchMessages();
   }, [selectedUser]);
 
-  /* SOCKET RECEIVE */
+  /* SOCKET RECEIVE (FIX DUPLICATE HERE) */
   useEffect(() => {
     if (!socket) return;
 
     const handleMessage = (message) => {
-      const match =
+      const isChatMessage =
         String(message.senderId) === String(selectedUser?._id) ||
         String(message.receiverId) === String(selectedUser?._id);
 
-      if (match) {
-        setMessages((prev) => [...prev, message]);
-      }
+      if (!isChatMessage) return;
+
+      // ❌ IMPORTANT FIX: prevent duplicates
+      setMessages((prev) => {
+        const exists = prev.some((m) => m._id === message._id);
+        if (exists) return prev;
+        return [...prev, message];
+      });
     };
 
     socket.on("receive_message", handleMessage);
@@ -74,9 +72,7 @@ const ChatArea = ({ selectedUser, setSelectedUser }) => {
 
   /* AUTO SCROLL */
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({
-      behavior: "smooth"
-    });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   /* SEND MESSAGE */
@@ -100,7 +96,12 @@ const ChatArea = ({ selectedUser, setSelectedUser }) => {
       const data = await res.json();
 
       if (res.ok) {
-        setMessages((prev) => [...prev, data]);
+        // ❌ IMPORTANT FIX: avoid duplicate add here
+        setMessages((prev) => {
+          const exists = prev.some((m) => m._id === data._id);
+          if (exists) return prev;
+          return [...prev, data];
+        });
 
         socket?.emit("send_message", {
           senderId: userInfo._id,
@@ -117,39 +118,31 @@ const ChatArea = ({ selectedUser, setSelectedUser }) => {
     }
   };
 
-  /* DELETE MESSAGE */
+  /* DELETE */
   const handleDeleteMessage = async (id) => {
-    try {
-      const res = await fetch(`${API}/api/messages/${id}`, {
-        method: "DELETE",
-        credentials: "include"
-      });
+    const res = await fetch(`${API}/api/messages/${id}`, {
+      method: "DELETE",
+      credentials: "include"
+    });
 
-      if (res.ok) {
-        setMessages((prev) => prev.filter((m) => m._id !== id));
-      }
-    } catch (err) {
-      console.error(err);
+    if (res.ok) {
+      setMessages((prev) => prev.filter((m) => m._id !== id));
     }
   };
 
   /* CLEAR CHAT */
   const handleClearChat = async () => {
-    try {
-      const res = await fetch(
-        `${API}/api/messages/clear/${selectedUser._id}`,
-        {
-          method: "DELETE",
-          credentials: "include"
-        }
-      );
-
-      if (res.ok) {
-        setMessages([]);
-        setShowClearModal(false);
+    const res = await fetch(
+      `${API}/api/messages/clear/${selectedUser._id}`,
+      {
+        method: "DELETE",
+        credentials: "include"
       }
-    } catch (err) {
-      console.error(err);
+    );
+
+    if (res.ok) {
+      setMessages([]);
+      setShowClearModal(false);
     }
   };
 
@@ -190,25 +183,16 @@ const ChatArea = ({ selectedUser, setSelectedUser }) => {
       {/* MESSAGES */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((msg) => {
-          const isMe =
-            String(msg.senderId) === String(userInfo._id);
+          const isMe = String(msg.senderId) === String(userInfo._id);
 
           return (
-            <div
-              key={msg._id}
-              className={`flex ${isMe ? "justify-end" : "justify-start"}`}
-            >
-              <div
-                className={`relative max-w-xs px-4 py-2 rounded-2xl ${isMe
-                    ? "bg-cyan-500 text-white"
-                    : "bg-white/10 text-white"
-                  }`}
-              >
-                {/* DELETE */}
+            <div key={msg._id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
+              <div className="relative max-w-xs px-4 py-2 rounded-2xl bg-white/10 text-white">
+
                 {isMe && (
                   <button
                     onClick={() => handleDeleteMessage(msg._id)}
-                    className="absolute top-1 right-1 text-red-300 hover:text-red-500"
+                    className="absolute top-1 right-1 text-red-300"
                   >
                     <Trash2 size={14} />
                   </button>
@@ -224,25 +208,18 @@ const ChatArea = ({ selectedUser, setSelectedUser }) => {
       </div>
 
       {/* INPUT */}
-      <form
-        onSubmit={handleSendMessage}
-        className="p-3 border-t border-white/10 flex gap-2"
-      >
+      <form onSubmit={handleSendMessage} className="p-3 flex gap-2 border-t border-white/10">
         <input
           value={newMessage}
           onChange={(e) => {
             setNewMessage(e.target.value);
 
-            socket?.emit("typing", {
-              receiverId: selectedUser._id
-            });
+            socket?.emit("typing", { receiverId: selectedUser._id });
 
             clearTimeout(typingTimeoutRef.current);
 
             typingTimeoutRef.current = setTimeout(() => {
-              socket?.emit("stopTyping", {
-                receiverId: selectedUser._id
-              });
+              socket?.emit("stopTyping", { receiverId: selectedUser._id });
             }, 1000);
           }}
           placeholder="Type message..."
@@ -261,14 +238,8 @@ const ChatArea = ({ selectedUser, setSelectedUser }) => {
             <h2 className="text-white mb-4">Clear chat?</h2>
 
             <div className="flex gap-3 justify-center">
-              <button onClick={() => setShowClearModal(false)}>
-                Cancel
-              </button>
-
-              <button
-                onClick={handleClearChat}
-                className="text-red-400"
-              >
+              <button onClick={() => setShowClearModal(false)}>Cancel</button>
+              <button onClick={handleClearChat} className="text-red-400">
                 Clear
               </button>
             </div>
