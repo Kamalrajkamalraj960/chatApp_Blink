@@ -36,6 +36,10 @@ export const initSocket = (server) => {
     socket.on("send_message", (messageData) => {
       const receiverSocketId = userSocketMap[messageData.receiverId];
 
+      // 🔥 ALWAYS emit to sender also (fixes "not realtime feeling")
+      io.to(socket.id).emit("receive_message", messageData);
+
+      // 🔥 emit to receiver if online
       if (receiverSocketId) {
         io.to(receiverSocketId).emit("receive_message", messageData);
       }

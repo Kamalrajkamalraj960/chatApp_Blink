@@ -3,11 +3,13 @@ import Sidebar from "../components/Sidebar";
 import ChatArea from "../components/ChatArea";
 import { useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
+import { useSocketContext } from "../context/SocketContext";
 import api from "../axios";
-
 
 const ChatPage = () => {
   const { userInfo } = useSelector((state) => state.auth);
+
+  const { socket } = useSocketContext();
 
   const [selectedUser, setSelectedUser] = useState(null);
 
@@ -43,6 +45,7 @@ const ChatPage = () => {
           <ChatArea
             selectedUser={selectedUser}
             setSelectedUser={setSelectedUser}
+            socket={socket}   // ✅ important
           />
         </div>
 
